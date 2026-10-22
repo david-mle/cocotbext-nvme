@@ -40,10 +40,12 @@ a functional NVMe controller that can be driven by a real NVMe host driver
 
 ## Requirements
 
-- Python 3.8+
-- [cocotb](https://www.cocotb.org/) version 2.0+
+- Python 3.9+
+- [cocotb](https://www.cocotb.org/) 2.x
 - [cocotbext-pcie](https://github.com/alexforencich/cocotbext-pcie)
   (vendored under `cocotbext/pcie`)
+- Python packages from `requirements.txt` (cocotb, cocotbext-axi,
+  cocotb-test, pyzmq):
 - QEMU built with the `cocotb-pcie-endpoint` cosim device
   ([fork](https://github.com/syedsk/qemu))
 - Linux host with the `nvme` driver and
@@ -106,6 +108,9 @@ QEMU_BIOS_DIR="$TOP_DIR/binaries"
 
 ```bash
 cd cocotbext-nvme
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
 make
 ```
 
