@@ -86,9 +86,13 @@ set -euo pipefail
 
 TOP_DIR="$PWD"
 X86_QEMU="$TOP_DIR/binaries/qemu-system-x86_64"
-IMAGE="$TOP_DIR/binaries/jammy-server-cloudimg-amd64.img"
+BASE_IMAGE="$TOP_DIR/binaries/jammy-server-cloudimg-amd64.img"
+OVERLAY="$TOP_DIR/jammy-overlay.qcow2"
 SEED="$TOP_DIR/seed.img"
 QEMU_BIOS_DIR="$TOP_DIR/binaries"
+
+# Keep the pristine cloud image untouched; write changes to an overlay
+[ -f "$OVERLAY" ] || qemu-img create -f qcow2 -F qcow2 -b "$BASE_IMAGE" "$OVERLAY" 20G
 
 # One-time cloud-init seed (sets password + SSH key for user 'ubuntu')
 if [ ! -f "$SEED" ]; then
@@ -112,7 +116,7 @@ EP_OPTS+=",bar0_size=16384,bar0_type=0,bar1_size=16384,bar1_type=0"
     -L "$QEMU_BIOS_DIR" \
     -m 4096 \
     -smp 4 \
-    -drive file="$IMAGE",format=qcow2 \
+    -drive file="$OVERLAY",format=qcow2 \
     -drive file="$SEED",format=raw \
     -device pcie-root-port,id=rp0,bus=pcie.0,chassis=1,slot=0 \
     -device "$EP_OPTS" \
