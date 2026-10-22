@@ -87,7 +87,21 @@ set -euo pipefail
 TOP_DIR="$PWD"
 X86_QEMU="$TOP_DIR/binaries/qemu-system-x86_64"
 IMAGE="$TOP_DIR/binaries/jammy-server-cloudimg-amd64.img"
+SEED="$TOP_DIR/seed.img"
 QEMU_BIOS_DIR="$TOP_DIR/binaries"
+
+# One-time cloud-init seed (sets password + SSH key for user 'ubuntu')
+if [ ! -f "$SEED" ]; then
+    cat > user-data <<'EOF'
+#cloud-config
+password: ubuntu
+chpasswd: { expire: false }
+ssh_pwauth: true
+EOF
+    echo "instance-id: jammy-cocotb" > meta-data
+    cloud-localds "$SEED" user-data meta-data
+fi
+
 
 EP_OPTS="cocotb-pcie-endpoint,bus=rp0,addr=0x0"
 EP_OPTS+=",np_port=5555,push_port=6000,pull_port=6001"
@@ -99,6 +113,7 @@ EP_OPTS+=",bar0_size=16384,bar0_type=0,bar1_size=16384,bar1_type=0"
     -m 4096 \
     -smp 4 \
     -drive file="$IMAGE",format=qcow2 \
+    -drive file="$SEED",format=raw \
     -device pcie-root-port,id=rp0,bus=pcie.0,chassis=1,slot=0 \
     -device "$EP_OPTS" \
     -netdev user,id=eth0,hostfwd=tcp::2222-:22 \
