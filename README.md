@@ -60,6 +60,7 @@ a functional NVMe controller that can be driven by a real NVMe host driver
 ```bash
 ../configure \
     --target-list=x86_64-softmmu \
+    --extra-cflags=-Wno-error=discarded-qualifiers \
     --enable-virtfs \
     --disable-gtk \
     --disable-sdl \
@@ -71,7 +72,8 @@ a functional NVMe controller that can be driven by a real NVMe host driver
     --enable-cap-ng \
     --disable-libusb \
     --disable-bzip2 \
-    --enable-slirp
+    --enable-slirp \
+    --disable-docs
 
 make -j$(nproc)
 ```
