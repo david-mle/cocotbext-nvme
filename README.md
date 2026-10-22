@@ -89,6 +89,10 @@ X86_QEMU="$TOP_DIR/binaries/qemu-system-x86_64"
 IMAGE="$TOP_DIR/binaries/jammy-server-cloudimg-amd64.img"
 QEMU_BIOS_DIR="$TOP_DIR/binaries"
 
+EP_OPTS="cocotb-pcie-endpoint,bus=rp0,addr=0x0"
+EP_OPTS+=",np_port=5555,push_port=6000,pull_port=6001"
+EP_OPTS+=",bar0_size=16384,bar0_type=0,bar1_size=16384,bar1_type=0"
+
 "$X86_QEMU" \
     -machine q35 \
     -L "$QEMU_BIOS_DIR" \
@@ -96,9 +100,7 @@ QEMU_BIOS_DIR="$TOP_DIR/binaries"
     -smp 4 \
     -drive file="$IMAGE",format=qcow2 \
     -device pcie-root-port,id=rp0,bus=pcie.0,chassis=1,slot=0 \
-    -device cocotb-pcie-endpoint,bus=rp0,addr=0x0, \
-     np_port=5555,push_port=6000,pull_port=6001,\
-     bar0_size=16384,bar0_type=0,bar1_size=16384,bar1_type=0 \
+    -device "$EP_OPTS" \
     -netdev user,id=eth0,hostfwd=tcp::2222-:22 \
     -net nic,netdev=eth0 \
     -serial mon:stdio \
