@@ -277,6 +277,8 @@ class NvmeController():
                     await self.ctrlr_cmd_deleteiocq(cmd)
                 elif (cmd.opc.integer == AdminCmd.SetFeatures):
                     await self.ctrlr_cmd_setfeatures(cmd)
+                elif (cmd.opc.integer == AdminCmd.Abort):
+                    await self.ctrlr_cmd_abort(cmd)
                 else:
                     self.log.warning("Unhandled admin cmd: 0x%02x, completing with Invalid Opcode",
                                      cmd.opc.integer)
@@ -658,6 +660,12 @@ class NvmeController():
         val = dw0.to_int()
         sq = self.submission_queues[0]
         await self.ctrlr_write_completion(sq, cmd, dw0=val)
+
+    async def ctrlr_cmd_abort(self, cmd):
+        self.log.info("CMD: abort sqid %r cid %r", cmd.dw10.integer & 0xffff, cmd.dw10.integer >> 16)
+        # commands are not abortable here, DW0 bit 0 set means "command not aborted"
+        sq = self.submission_queues[0]
+        await self.ctrlr_write_completion(sq, cmd, dw0=1)
 
     async def ctrlr_cmd_read(self, sq, cmd):
         self.log.info("CMD: Read")
