@@ -342,6 +342,10 @@ class NvmeController():
             data_len -= size
             prp_list = False
             while(data_len > self.mps):
+                # with more pages to come, the last slot of a PRP list page points to the next list page
+                if (prp2 % self.mps == self.mps - 8):
+                    prp2 = await self.ep.mem_region.read(prp2, 8)
+                    prp2 = int.from_bytes(prp2, byteorder="little")
                 add = await self.ep.mem_region.read(prp2, 8)
                 add = int.from_bytes(add, byteorder="little")
                 data = await self.ep.mem_region.read(add, self.mps)
