@@ -327,11 +327,13 @@ class NvmeController():
                 data = await self.ep.mem_region.read(prp1, data_len)
                 dma_data.extend(data)
             else:
-                size = (self.mps - offset)
+                # PRP2 only holds what does not fit into the rest of PRP1's page
+                size = min(data_len, self.mps - offset)
                 data = await self.ep.mem_region.read(prp1, size)
                 dma_data.extend(data)
-                data = await self.ep.mem_region.read(prp2, offset)
-                dma_data.extend(data)
+                if (data_len > size):
+                    data = await self.ep.mem_region.read(prp2, data_len - size)
+                    dma_data.extend(data)
         else:
             self.log.debug("DMA DATA > %r",self.mps)
             size = self.mps - offset
